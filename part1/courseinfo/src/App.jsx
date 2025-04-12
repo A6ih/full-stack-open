@@ -22,6 +22,14 @@ const Content = (props) => {
   );
 };
 
+const Total = (props) => {
+  return (
+    <>
+      <p>Number of Exercises - {props.exercises}</p>
+    </>
+  );
+};
+
 const App = () => {
   const courseInfo = {
     title: "Half Stack application development",
@@ -41,10 +49,16 @@ const App = () => {
     ],
   };
 
+  const total = courseInfo.parts.reduce(
+    (acc, curr) => acc + curr.noOfExercises,
+    0
+  );
+
   return (
     <>
       <Header title={courseInfo.title} />
       <Content parts={courseInfo.parts} />
+      <Total exercises={total} />
     </>
   );
 };
