@@ -6,6 +6,22 @@ const Header = (props) => {
   );
 };
 
+const Content = (props) => {
+  return (
+    <>
+      <p>
+        {props.parts[0].title} - {props.parts[0].noOfExercises} Exercises
+      </p>
+      <p>
+        {props.parts[1].title} - {props.parts[1].noOfExercises} Exercises
+      </p>
+      <p>
+        {props.parts[2].title} - {props.parts[2].noOfExercises} Exercises
+      </p>
+    </>
+  );
+};
+
 const App = () => {
   const courseInfo = {
     title: "Half Stack application development",
@@ -28,6 +44,7 @@ const App = () => {
   return (
     <>
       <Header title={courseInfo.title} />
+      <Content parts={courseInfo.parts} />
     </>
   );
 };
