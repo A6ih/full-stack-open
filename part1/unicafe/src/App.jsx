@@ -20,6 +20,21 @@ const Votes = ({ label, score }) => (
   </>
 );
 
+const Statistics = ({ scores }) => {
+  const { good, neutral, bad, average, all, positive } = scores;
+  if (!all) return <p>No feedback given</p>;
+  return (
+    <>
+      <Votes label="good" score={good} />
+      <Votes label="neutral" score={neutral} />
+      <Votes label="bad" score={bad} />
+      <Votes label="all" score={all} />
+      <Votes label="average" score={average} />
+      <Votes label="Positive" score={positive + " %"} />
+    </>
+  );
+};
+
 const App = () => {
   // save clicks of each button to its own state
   const [good, setGood] = useState(0);
@@ -35,7 +50,7 @@ const App = () => {
     setGood(total);
     setAll(allTotal);
     setAverage(((total - bad) / allTotal).toFixed(2));
-    setPositive(((100 * total) / allTotal).toFixed(2))
+    setPositive(((100 * total) / allTotal).toFixed(2));
   };
   const addNeutral = () => {
     const total = neutral + 1;
@@ -55,25 +70,15 @@ const App = () => {
   };
 
   const headers = ["give feedback", "statistics"];
-  const btnTexts = {
-    good: "good",
-    neutral: "neutral",
-    bad: "bad",
-  };
 
   return (
     <div>
       <Header header={headers[0]} />
-      <Button onClick={addGood} text={btnTexts.good} />
-      <Button onClick={addNeutral} text={btnTexts.neutral} />
-      <Button onClick={addBad} text={btnTexts.bad} />
+      <Button onClick={addGood} text="good " />
+      <Button onClick={addNeutral} text="neutral" />
+      <Button onClick={addBad} text="bad" />
       <Header header={headers[1]} />
-      <Votes label={btnTexts.good} score={good} />
-      <Votes label={btnTexts.neutral} score={neutral} />
-      <Votes label={btnTexts.bad} score={bad} />
-      <Votes label="all" score={all} />
-      <Votes label="average" score={average} />
-      <Votes label="Positive" score={positive + " %"} />
+      <Statistics scores={{ good, neutral, bad, all, average, positive }} />
     </div>
   );
 };
