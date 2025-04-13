@@ -12,11 +12,12 @@ const Button = ({ text, onClick }) => (
   </>
 );
 
-const Votes = ({ label, score }) => (
+const StatisticLine = ({ label, score }) => (
   <>
-    <p>
-      {label} = {score}
-    </p>
+    <tr>
+      <td>{label}</td>
+      <td>{score}</td>
+    </tr>
   </>
 );
 
@@ -24,14 +25,16 @@ const Statistics = ({ scores }) => {
   const { good, neutral, bad, average, all, positive } = scores;
   if (!all) return <p>No feedback given</p>;
   return (
-    <>
-      <Votes label="good" score={good} />
-      <Votes label="neutral" score={neutral} />
-      <Votes label="bad" score={bad} />
-      <Votes label="all" score={all} />
-      <Votes label="average" score={average} />
-      <Votes label="Positive" score={positive + " %"} />
-    </>
+    <table>
+      <tbody>
+        <StatisticLine label="good" score={good} />
+        <StatisticLine label="neutral" score={neutral} />
+        <StatisticLine label="bad" score={bad} />
+        <StatisticLine label="all" score={all} />
+        <StatisticLine label="average" score={average} />
+        <StatisticLine label="Positive" score={positive + " %"} />
+      </tbody>
+    </table>
   );
 };
 
