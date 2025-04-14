@@ -16,10 +16,10 @@ const Content = ({ parts }) => {
   );
 };
 
-const Total = (props) => {
+const Total = ({ exercises }) => {
   return (
     <>
-      <p>Number of Exercises - {props.exercises}</p>
+      <p>total of {exercises}</p>
     </>
   );
 };
@@ -35,10 +35,12 @@ const Part = ({ title, exercises }) => {
 };
 
 const Course = ({ course }) => {
+  const total = course.parts.reduce((acc, curr) => acc + curr.exercises, 0);
   return (
     <>
       <Header title={course.name} />
       <Content parts={course.parts} />
+      <Total exercises={total} />
     </>
   );
 };
@@ -54,14 +56,19 @@ const App = () => {
         id: 1,
       },
       {
-        name: 'Using props to pass data',
+        name: "Using props to pass data",
         exercises: 7,
-        id: 2
+        id: 2,
       },
       {
         name: "State of a component",
         exercises: 14,
         id: 3,
+      },
+      {
+        name: "Redux",
+        exercises: 11,
+        id: 4,
       },
     ],
   };
