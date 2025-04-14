@@ -1,5 +1,43 @@
 import { useState } from "react";
 
+const Filter = ({ value, onChange }) => (
+  <div>
+    filter shown with <input value={value} onChange={onChange} />
+  </div>
+);
+
+const PersonForm = ({
+  name,
+  number,
+  onSubmit,
+  onChangeName,
+  onChangeNumber,
+}) => {
+  return (
+    <>
+      <form onSubmit={onSubmit}>
+        <div>
+          name: <input value={name} onChange={onChangeName} />
+        </div>
+        <div>
+          number: <input value={number} onChange={onChangeNumber} />
+        </div>
+        <div>
+          <button type="submit">add</button>
+        </div>
+      </form>
+    </>
+  );
+};
+
+const Persons = ({ personsArr }) => {
+  return personsArr.map((person) => (
+    <p key={person.name}>
+      {person.name} {person.number}
+    </p>
+  ));
+};
+
 const App = () => {
   const [persons, setPersons] = useState([
     { name: "Arto Hellas", number: "040-123456", id: 1 },
@@ -29,7 +67,7 @@ const App = () => {
     setFilter(event.target.value);
   };
 
-  const addName = (event) => {
+  const addPerson = (event) => {
     event.preventDefault();
     const copy = persons.map((person) => person.name);
     if (copy.includes(newName))
@@ -46,27 +84,22 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <div>
-        filter shown with <input value={filter} onChange={handleFilter} />
-      </div>
+
+      <Filter value={filter} onChange={handleFilter} />
+
       <h2>Add a new</h2>
-      <form onSubmit={addName}>
-        <div>
-          name: <input value={newName} onChange={handleNewName} />
-        </div>
-        <div>
-          number: <input value={newNumber} onChange={handleNewNumber} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+
+      <PersonForm
+        onSubmit={addPerson}
+        name={newName}
+        number={newNumber}
+        onChangeName={handleNewName}
+        onChangeNumber={handleNewNumber}
+      />
+
       <h2>Numbers</h2>
-      {showPerson.map((person) => (
-        <p key={person.name}>
-          {person.name} {person.number}
-        </p>
-      ))}
+
+      <Persons personsArr={showPerson} />
     </div>
   );
 };
