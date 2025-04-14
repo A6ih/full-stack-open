@@ -10,6 +10,9 @@ const App = () => {
 
   const addName = (event) => {
     event.preventDefault();
+    const copy = persons.map((person) => person.name);
+    if (copy.includes(newName))
+      return alert(`${newName} is already added to phonebook`);
     const nameObj = {
       name: newName,
     };
@@ -30,7 +33,7 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       {persons.map((person) => (
-        <p>{person.name}</p>
+        <p key={person.name}>{person.name}</p>
       ))}
     </div>
   );
