@@ -40,11 +40,26 @@ const Persons = ({ personsArr, onClick }) => {
   ));
 };
 
+const Notification = ({ message, errorMessage }) => {
+  if (!message && !errorMessage) return null;
+  return (
+    <>
+      {errorMessage ? (
+        <p className="error">{errorMessage}</p>
+      ) : (
+        <p className="notification">{message}</p>
+      )}
+    </>
+  );
+};
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [notify, setNotify] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     phonebookService.getAll().then((initialData) => setPersons(initialData));
@@ -79,15 +94,30 @@ const App = () => {
       ) {
         const updateObj = persons.find((person) => person.name === newName);
         updateObj.number = newNumber;
-        return phonebookService.update(updateObj.id, updateObj).then((newObj) => {
-          setPersons(
-            persons.map((person) =>
-              person.id === updateObj.id ? newObj : person
-            )
-          );
-          setNewName("");
-          setNewNumber("");
-        });
+        return phonebookService
+          .update(updateObj.id, updateObj)
+          .then((newObj) => {
+            setPersons(
+              persons.map((person) =>
+                person.id === updateObj.id ? newObj : person
+              )
+            );
+            setNewName("");
+            setNewNumber("");
+            setNotify(`Updated ${newName} information`);
+            setTimeout(() => {
+              setNotify("");
+            }, 5000);
+          })
+          .catch(() => {
+            setError(
+              `Information of ${newName} has already been removed from server`
+            );
+            setPersons(persons.filter((person) => updateObj.id !== person.id));
+            setTimeout(() => {
+              setError("");
+            }, 5000);
+          });
       }
     }
     const nameObj = {
@@ -98,6 +128,10 @@ const App = () => {
       setPersons(persons.concat(newObj));
       setNewName("");
       setNewNumber("");
+      setNotify(`Added ${newName}`);
+      setTimeout(() => {
+        setNotify("");
+      }, 5000);
     });
   };
 
@@ -114,6 +148,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={notify} errorMessage={error} />
 
       <Filter value={filter} onChange={handleFilter} />
 
