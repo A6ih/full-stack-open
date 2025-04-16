@@ -31,10 +31,11 @@ const PersonForm = ({
   );
 };
 
-const Persons = ({ personsArr }) => {
+const Persons = ({ personsArr, onClick }) => {
   return personsArr.map((person) => (
     <p key={person.name}>
-      {person.name} {person.number}
+      {person.name} {person.number}{" "}
+      <button onClick={() => onClick(person.id)}>Delete</button>
     </p>
   ));
 };
@@ -83,6 +84,16 @@ const App = () => {
     });
   };
 
+  const deletePerson = (id) => {
+    const deleleObj = persons.find((person) => person.id === id);
+    if (confirm(`Delete ${deleleObj.name} ?`)) {
+      phonebookService
+        .deletePerson(deleleObj.id)
+        .then(() => phonebookService.getAll())
+        .then((newArr) => setPersons(newArr));
+    }
+  };
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -101,7 +112,7 @@ const App = () => {
 
       <h2>Numbers</h2>
 
-      <Persons personsArr={showPerson} />
+      <Persons personsArr={showPerson} onClick={deletePerson} />
     </div>
   );
 };
