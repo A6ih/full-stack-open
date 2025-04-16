@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import phonebookService from "./services/personService";
 
 const Filter = ({ value, onChange }) => (
   <div>
@@ -46,9 +46,7 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((response) => setPersons(response.data));
+    phonebookService.getAll().then((initialData) => setPersons(initialData));
   }, []);
 
   const showPerson = !filter
@@ -78,9 +76,11 @@ const App = () => {
       name: newName,
       number: newNumber,
     };
-    setPersons(persons.concat(nameObj));
-    setNewName("");
-    setNewNumber("");
+    phonebookService.create(nameObj).then((newObj) => {
+      setPersons(persons.concat(newObj));
+      setNewName("");
+      setNewNumber("");
+    });
   };
 
   return (
