@@ -65,8 +65,28 @@ const generateId = () => {
   return id;
 };
 
+const duplicateName = (name) =>
+  persons.map((person) => person.name).includes(name) ? true : false;
+
 app.post("/api/persons", (request, response) => {
   const person = request.body;
+
+  if (!person.name) {
+    return response.status(400).json({
+      error: "name cannot be empty",
+    });
+  }
+  if (!person.number) {
+    return response.status(400).json({
+      error: "number cannot be empty",
+    });
+  }
+  if (duplicateName(person.name)) {
+    return response.status(400).json({
+      error: "name must be unique",
+    });
+  }
+
   person.id = generateId();
   persons = persons.concat(person);
   response.json(person);
