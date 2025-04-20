@@ -67,42 +67,36 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-const generateId = () => {
-  const string = "abcdefg";
-  let id = "";
-  for (let i = 0; i < 2; i++) {
-    id += string.at(Math.floor(Math.random() * string.length));
-    id += Math.floor(Math.random() * 99);
-  }
-
-  return id;
-};
-
 const duplicateName = (name) =>
   persons.map((person) => person.name).includes(name) ? true : false;
 
 app.post("/api/persons", (request, response) => {
-  const person = request.body;
+  const { name, number } = request.body;
 
-  if (!person.name) {
+  if (!name) {
     return response.status(400).json({
       error: "name cannot be empty",
     });
   }
-  if (!person.number) {
+  if (!number) {
     return response.status(400).json({
       error: "number cannot be empty",
     });
   }
-  if (duplicateName(person.name)) {
-    return response.status(400).json({
-      error: "name must be unique",
-    });
-  }
+  // if (duplicateName(person.name)) {
+  //   return response.status(400).json({
+  //     error: "name must be unique",
+  //   });
+  // }
 
-  person.id = generateId();
-  persons = persons.concat(person);
-  response.json(person);
+  const person = new Person({
+    name: name,
+    number: number,
+  });
+
+  person.save().then((newPerson) => {
+    response.json(newPerson);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
