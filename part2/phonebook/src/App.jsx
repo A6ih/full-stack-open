@@ -124,15 +124,23 @@ const App = () => {
       name: newName,
       number: newNumber,
     };
-    phonebookService.create(nameObj).then((newObj) => {
-      setPersons(persons.concat(newObj));
-      setNewName("");
-      setNewNumber("");
-      setNotify(`Added ${newName}`);
-      setTimeout(() => {
-        setNotify("");
-      }, 5000);
-    });
+    phonebookService
+      .create(nameObj)
+      .then((newObj) => {
+        setPersons(persons.concat(newObj));
+        setNewName("");
+        setNewNumber("");
+        setNotify(`Added ${newName}`);
+        setTimeout(() => {
+          setNotify("");
+        }, 5000);
+      })
+      .catch((error) => {
+        setError(error.response.data.error);
+        setTimeout(() => {
+          setError("");
+        }, 5000);
+      });
   };
 
   const deletePerson = (id) => {
