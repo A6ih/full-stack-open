@@ -92,11 +92,12 @@ const App = () => {
           `${newName} is already added to phonebook, replace the old number with a new one?`
         )
       ) {
-        const updateObj = persons.find((person) => person.name === newName);
+        const updateObj = {...persons.find((person) => person.name === newName)};
         updateObj.number = newNumber;
         return phonebookService
           .update(updateObj.id, updateObj)
           .then((newObj) => {
+            console.log(newObj)
             setPersons(
               persons.map((person) =>
                 person.id === updateObj.id ? newObj : person
