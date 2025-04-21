@@ -109,11 +109,8 @@ const App = () => {
               setNotify("");
             }, 5000);
           })
-          .catch(() => {
-            setError(
-              `Information of ${newName} has already been removed from server`
-            );
-            setPersons(persons.filter((person) => updateObj.id !== person.id));
+          .catch((error) => {
+            setError(error.response.data.error);
             setTimeout(() => {
               setError("");
             }, 5000);
