@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 
@@ -12,8 +13,15 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema)
 
-const mongoUrl = 'mongodb://localhost/bloglist'
-mongoose.connect(mongoUrl)
+const mongoUrl = process.env.MONGODB_URI
+mongoose
+  .connect(mongoUrl)
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) =>
+    console.error('connection to MongoDB failed error:', error.message)
+  )
 
 app.use(express.json())
 
