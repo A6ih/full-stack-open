@@ -14,8 +14,29 @@ const favoriteBlog = (blogs) => {
   return blogs.length === 0 ? 0 : copy[0]
 }
 
+const mostBlogs = (blogs) => {
+  if (blogs.length === 0) return 0
+
+  let copy = [...blogs]
+
+  const resultArr = []
+
+  while (copy.length > 0) {
+    const author = copy[0].author
+    const tempArr = copy.filter((blog) => author === blog.author)
+    const obj = { author: author, blogs: tempArr.length }
+    resultArr.push(obj)
+    copy = copy.filter((blogs) => author !== blogs.author)
+  }
+
+  resultArr.sort((a, b) => b.blogs - a.blogs)
+
+  return resultArr[0]
+}
+
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
 }
