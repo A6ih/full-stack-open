@@ -51,11 +51,15 @@ describe('returns', () => {
 
 test('unique identifier property of the blog posts is named id', async () => {
   const responseArr = (await api.get('/api/blogs')).body
-  const keys = responseArr.map(object => Object.keys(object))
-  const checkId = keys.map(arr => arr.includes('id')).every(value => value === true)
-  const checkFalseId = keys.map(arr => arr.includes('_id')).every(value => value === false)
+  const keys = responseArr.map((object) => Object.keys(object))
+  const checkId = keys
+    .map((arr) => arr.includes('id'))
+    .every((value) => value === true)
+  const checkFalseId = keys
+    .map((arr) => arr.includes('_id'))
+    .every((value) => value === false)
 
-  const id = (checkId && checkFalseId) ? 'id' : false
+  const id = checkId && checkFalseId ? 'id' : false
 
   assert.strictEqual(id, 'id')
 })
@@ -77,6 +81,18 @@ test('post request successfully creates a new blog', async () => {
   const response = await api.get('/api/blogs')
 
   assert.strictEqual(response.body.length, blogs.length + 1)
+})
+
+test('if the likes property is missing, default the likes value to 0', async () => {
+  const newBlog = {
+    title: 'Go To Statement Considered Harmful',
+    author: 'Edsger W. Dijkstra',
+    url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
+  }
+
+  const response = await api.post('/api/blogs').send(newBlog)
+
+  assert.strictEqual(response.body.likes, 0)
 })
 
 after(async () => {
