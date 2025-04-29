@@ -48,6 +48,17 @@ describe('returns', () => {
   })
 })
 
+test('unique identifier property of the blog posts is named id', async () => {
+  const responseArr = (await api.get('/api/blogs')).body
+  const keys = responseArr.map(object => Object.keys(object))
+  const checkId = keys.map(arr => arr.includes('id')).every(value => value === true)
+  const checkFalseId = keys.map(arr => arr.includes('_id')).every(value => value === false)
+
+  const id = (checkId && checkFalseId) ? 'id' : false
+
+  assert.strictEqual(id, 'id')
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
