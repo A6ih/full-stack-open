@@ -95,6 +95,34 @@ test('if the likes property is missing, default the likes value to 0', async () 
   assert.strictEqual(response.body.likes, 0)
 })
 
+describe('blog without', () => {
+  test('title is not added', async () => {
+    const newBlog = {
+      author: 'Edsger W. Dijkstra',
+      url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
+      likes: 5,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('url is not added', async () => {
+    const newBlog = {
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      likes: 5,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
