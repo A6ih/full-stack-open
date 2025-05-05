@@ -103,10 +103,7 @@ describe('blog without', () => {
       likes: 5,
     }
 
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
+    await api.post('/api/blogs').send(newBlog).expect(400)
   })
 
   test('url is not added', async () => {
@@ -116,11 +113,24 @@ describe('blog without', () => {
       likes: 5,
     }
 
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
+    await api.post('/api/blogs').send(newBlog).expect(400)
   })
+})
+
+test('a blog can be deleted', async () => {
+  const AllBlogs = await Blog.find({})
+  const blogsAtStart = AllBlogs.map((blog) => blog.toJSON())
+  const blogToDelete = blogsAtStart[0]
+
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+  const newBlogs = await Blog.find({})
+  const blogsAtEnd = newBlogs.map((blog) => blog.toJSON())
+
+  const titles = blogsAtEnd.map(blog => blog.title)
+  assert(!titles.includes(blogToDelete.title))
+
+  assert.strictEqual(blogsAtEnd.length, blogs.length - 1)
 })
 
 after(async () => {
