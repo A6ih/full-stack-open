@@ -127,10 +127,26 @@ test('a blog can be deleted', async () => {
   const newBlogs = await Blog.find({})
   const blogsAtEnd = newBlogs.map((blog) => blog.toJSON())
 
-  const titles = blogsAtEnd.map(blog => blog.title)
+  const titles = blogsAtEnd.map((blog) => blog.title)
   assert(!titles.includes(blogToDelete.title))
 
   assert.strictEqual(blogsAtEnd.length, blogs.length - 1)
+})
+
+test('likes in a blog can be updated', async () => {
+  const initialBlogs = (await Blog.find({})).map((blog) => blog.toJSON())
+  const blogToUpdate = { ...initialBlogs[0] }
+
+  blogToUpdate.likes = 11
+
+  await api
+    .put(`/api/blogs/${initialBlogs[0].id}`)
+    .send(blogToUpdate)
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+
+  const updatedBlogs = (await Blog.find({})).map((blog) => blog.toJSON())
+  assert.strictEqual(updatedBlogs[0].likes, blogToUpdate.likes)
 })
 
 after(async () => {
