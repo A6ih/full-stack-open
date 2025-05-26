@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
@@ -146,6 +147,149 @@ test('likes in a blog can be updated', async () => {
 
   const updatedBlogs = (await Blog.find({})).map((blog) => blog.toJSON())
   assert.strictEqual(updatedBlogs[0].likes, blogToUpdate.likes)
+})
+
+const users = [
+  {
+    username: 'hellas',
+    name: 'Arto Hellas',
+    password: 'lalal',
+  },
+  {
+    username: 'mluukkai',
+    name: 'Matti Luukkainen',
+    password: 'lalal1',
+  },
+]
+
+describe('when there are users in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+    await User.insertMany(users)
+  })
+
+  test('a new user can be added', async () => {
+    const intialUsers = await User.find({})
+
+    const newUser = {
+      username: 'root',
+      name: 'Superuser',
+      password: 'Newpass',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const userAtEnd = await User.find({})
+
+    assert.strictEqual(userAtEnd.length, intialUsers.length + 1)
+  })
+
+  test('username is required', async () => {
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      name: 'Superuser',
+      password: 'Newpass',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert(result.body.error.includes('`username` is required'))
+    const usersAtEnd = await User.find({})
+
+    assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+  })
+
+  test('new username should be unique', async () => {
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'hellas',
+      name: 'Superuser',
+      password: 'Newpass',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert(result.body.error.includes('expected `username` to be unique'))
+    const usersAtEnd = await User.find({})
+
+    assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+  })
+
+  test('username should be atleast 3 characters or longer', async () => {
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'he',
+      name: 'Superuser',
+      password: 'Newpass',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert(result.body.error.includes('is shorter than the minimum allowed length'))
+    const usersAtEnd = await User.find({})
+
+    assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+  })
+
+  test('password is required', async () => {
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'risto',
+      name: 'Superuser',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert(result.body.error.includes('password is required'))
+    const usersAtEnd = await User.find({})
+
+    assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+  })
+
+  test('password should be 3 characters or longer', async () => {
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'risto',
+      name: 'Superuser',
+      password: 'No'
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert(result.body.error.includes('password length should be atleast 3 characters or longer'))
+    const usersAtEnd = await User.find({})
+
+    assert.strictEqual(usersAtStart.length, usersAtEnd.length)
+  })
 })
 
 after(async () => {
