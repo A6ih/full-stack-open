@@ -8,6 +8,25 @@ const User = require('../models/user')
 
 const api = supertest(app)
 
+const getTestToken = async () => {
+  const user = {
+    username: 'tester',
+    password: 'lalala',
+    name: 'New tester',
+  }
+
+  await api.post('/api/users').send(user)
+
+  const userToLogin = {
+    username: 'tester',
+    password: 'lalala',
+  }
+
+  const token = await api.post('/api/login').send(userToLogin)
+
+  return token.body.token
+}
+
 const blogs = [
   {
     title: 'React patterns',
@@ -29,9 +48,24 @@ const blogs = [
   },
 ]
 
+const users = [
+  {
+    username: 'hellas',
+    name: 'Arto Hellas',
+    password: 'lalal',
+  },
+  {
+    username: 'mluukkai',
+    name: 'Matti Luukkainen',
+    password: 'lalal1',
+  },
+]
+
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(blogs)
+  await User.deleteMany({})
+  await User.insertMany(users)
 })
 
 describe('returns', () => {
@@ -64,6 +98,21 @@ test('unique identifier property of the blog posts is named id', async () => {
   assert.strictEqual(id, 'id')
 })
 
+test('adding a new blog without a token returns proper status code', async () => {
+  const newBlog = {
+    title: 'Go To Statement Considered Harmful',
+    author: 'Edsger W. Dijkstra',
+    url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
+    likes: 5,
+  }
+
+  await api.post('/api/blogs').send(newBlog).expect(401)
+
+  const allBlogs = await Blog.find({})
+
+  assert.strictEqual(blogs.length, allBlogs.length)
+})
+
 test('post request successfully creates a new blog', async () => {
   const newBlog = {
     title: 'Go To Statement Considered Harmful',
@@ -72,8 +121,11 @@ test('post request successfully creates a new blog', async () => {
     likes: 5,
   }
 
+  const token = await getTestToken()
+
   await api
     .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -90,7 +142,12 @@ test('if the likes property is missing, default the likes value to 0', async () 
     url: 'https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf',
   }
 
-  const response = await api.post('/api/blogs').send(newBlog)
+  const token = await getTestToken()
+
+  const response = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
 
   assert.strictEqual(response.body.likes, 0)
 })
@@ -103,7 +160,13 @@ describe('blog without', () => {
       likes: 5,
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    const token = await getTestToken()
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newBlog)
+      .expect(400)
   })
 
   test('url is not added', async () => {
@@ -113,16 +176,40 @@ describe('blog without', () => {
       likes: 5,
     }
 
-    await api.post('/api/blogs').send(newBlog).expect(400)
+    const token = await getTestToken()
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newBlog)
+      .expect(400)
   })
 })
 
 test('a blog can be deleted', async () => {
-  const AllBlogs = await Blog.find({})
-  const blogsAtStart = AllBlogs.map((blog) => blog.toJSON())
-  const blogToDelete = blogsAtStart[0]
+  const newBlog = {
+    title: 'Test blog',
+    author: 'Tester',
+    url: 'www.test.com',
+    likes: 5,
+  }
 
-  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+  const token = await getTestToken()
+
+  const returnedResponse = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
+
+  const returnedBlog = await returnedResponse.body
+
+  const AllBlogs = await Blog.find({})
+  const blogToDelete = returnedBlog
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(204)
 
   const newBlogs = await Blog.find({})
   const blogsAtEnd = newBlogs.map((blog) => blog.toJSON())
@@ -130,7 +217,7 @@ test('a blog can be deleted', async () => {
   const titles = blogsAtEnd.map((blog) => blog.title)
   assert(!titles.includes(blogToDelete.title))
 
-  assert.strictEqual(blogsAtEnd.length, blogs.length - 1)
+  assert.strictEqual(blogsAtEnd.length, AllBlogs.length - 1)
 })
 
 test('likes in a blog can be updated', async () => {
@@ -149,25 +236,7 @@ test('likes in a blog can be updated', async () => {
   assert.strictEqual(updatedBlogs[0].likes, blogToUpdate.likes)
 })
 
-const users = [
-  {
-    username: 'hellas',
-    name: 'Arto Hellas',
-    password: 'lalal',
-  },
-  {
-    username: 'mluukkai',
-    name: 'Matti Luukkainen',
-    password: 'lalal1',
-  },
-]
-
 describe('when there are users in db', () => {
-  beforeEach(async () => {
-    await User.deleteMany({})
-    await User.insertMany(users)
-  })
-
   test('a new user can be added', async () => {
     const intialUsers = await User.find({})
 
@@ -244,7 +313,9 @@ describe('when there are users in db', () => {
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
-    assert(result.body.error.includes('is shorter than the minimum allowed length'))
+    assert(
+      result.body.error.includes('is shorter than the minimum allowed length')
+    )
     const usersAtEnd = await User.find({})
 
     assert.strictEqual(usersAtStart.length, usersAtEnd.length)
@@ -276,7 +347,7 @@ describe('when there are users in db', () => {
     const newUser = {
       username: 'risto',
       name: 'Superuser',
-      password: 'No'
+      password: 'No',
     }
 
     const result = await api
@@ -285,7 +356,11 @@ describe('when there are users in db', () => {
       .expect(400)
       .expect('Content-Type', /application\/json/)
 
-    assert(result.body.error.includes('password length should be atleast 3 characters or longer'))
+    assert(
+      result.body.error.includes(
+        'password length should be atleast 3 characters or longer'
+      )
+    )
     const usersAtEnd = await User.find({})
 
     assert.strictEqual(usersAtStart.length, usersAtEnd.length)
